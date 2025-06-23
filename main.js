@@ -1,0 +1,83 @@
+const api = {
+  key: "fcc8de7015bbb202209bbf0261babf4c",
+  base: "https://api.openweathermap.org/data/2.5/"
+}
+
+const searchbox = document.querySelector('.search-box');
+searchbox.addEventListener('keypress', setQuery);
+
+// Get weather for user's current location on page load
+window.addEventListener('DOMContentLoaded', () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(success, error);
+  }
+});
+
+function success(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  getResultsByCoords(lat, lon);
+}
+
+function error() {
+  
+}
+
+
+function setQuery(evt) {
+  if (evt.keyCode == 13) {
+    getResults(searchbox.value);
+  }
+}
+
+function getResults(query) {
+  fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
+    .then(weather => weather.json())
+    .then(displayResults);
+}
+
+function getResultsByCoords(lat, lon) {
+  fetch(`${api.base}weather?lat=${lat}&lon=${lon}&units=metric&APPID=${api.key}`)
+    .then(weather => weather.json())
+    .then(displayResults);
+}
+
+function displayResults(weather) {
+  let city = document.querySelector('.location .city');
+  city.innerText = `${weather.name}, ${weather.sys.country}`;
+
+  let now = new Date();
+  let date = document.querySelector('.location .date');
+  date.innerText = dateBuilder(now);
+
+  let temp = document.querySelector('.current .temp');
+  temp.innerHTML = `${Math.round(weather.main.temp)}<span>°c</span>`;
+
+  let weather_el = document.querySelector('.current .weather');
+  weather_el.innerText = weather.weather[0].main;
+
+  let hilow = document.querySelector('.hi-low');
+  hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
+}
+function setQuery(evt) {
+  if (evt.keyCode == 13) {
+    const value = searchbox.value.trim();
+    if (value.toLowerCase() === "india") {
+      alert("Please enter a city name in India, e.g., 'Delhi' or 'Mumbai'.");
+      return;
+    }
+    getResults(value);
+  }
+}
+
+function dateBuilder(d) {
+  let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  let day = days[d.getDay()];
+  let date = d.getDate();
+  let month = months[d.getMonth()];
+  let year = d.getFullYear();
+
+  return `${day} ${date} ${month} ${year}`;
+}
